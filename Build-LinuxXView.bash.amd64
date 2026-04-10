@@ -17,7 +17,7 @@ if ! [ -d lib/libxview ]; then
 fi
 
 # Set the directories that will be used for installation
-[ -z "$OPENWINHOME" ] && OPENWINHOME=/usr
+[ -z "$OPENWINHOME" ] && OPENWINHOME=/usr/openwin
 [ -z "$X11DIR" ] && X11DIR=/usr/X11R6
 OWDEST=$DESTDIR$OPENWINHOME
 X11DEST=$DESTDIR$X11DIR/lib/X11/config
@@ -34,12 +34,12 @@ cat > imake.append <<EOF
 
 # Variable-definitions appended by imake-wrapper
   XVDESTDIR      = $OWDEST
-  EXTRA_DEFINES  = -DOPENWINHOME_DEFAULT=\"$OPENWINHOME\" -D_DEFAULT_SOURCE -DSYSV_UCONTEXT
+  EXTRA_DEFINES  = -DOPENWINHOME_DEFAULT=\"$OPENWINHOME\" -D_DEFAULT_SOURCE -DSYSV_UCONTEXT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
   CONFIGDIR      = $OPENWINHOME/lib/config
   INCLUDES      := -I`pwd`/build/include -I/usr/include/tirpc $IMAKE_EXTRA_INCLUDES -I$OWDEST/include \$(INCLUDES)
   LOCAL_LDFLAGS := -L`pwd`/lib/libolgx -L`pwd`/lib/libxview $IMAKE_EXTRA_LOCAL_LDFLAGS -L$OWDEST/lib \$(LOCAL_LDFLAGS)
   MAKEOVERRIDES  =
-  CFLAGS        += -g \$(EXTRA_CFLAGS)
+  CFLAGS        += -fno-stack-protector -g \$(EXTRA_CFLAGS)
 # End of variable-definitions appended by imake-wrapper
 
 EOF
