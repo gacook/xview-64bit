@@ -15,6 +15,7 @@ static char     sccsid[] = "@(#)ndis_d_pri.c 20.16 93/06/28 Copyr 1985 Sun Micro
  */
 #include <xview_private/ndis_d_pri_.h>
 #include <xview_private/ndis.h>
+#include <stdint.h>
 #include <signal.h>
 #ifdef __linux__
 #include <sys/param.h> /* for howmany(), NBBY */
@@ -114,23 +115,24 @@ ndis_send_ascending_fd(nclient, nbits, bits_ptr, func)
     Notify_error_func func;
 {
     register int fd, i, byteNum;
-    unsigned long   byte;
+    uint32_t    byte;
+    int mask_bytes = sizeof(__fd_mask); // Will be 8 on your system
 
     /* Send fd (by ascending numbers) */
     for (i = 0; i < howmany(nbits, NFDBITS); i++)
-	if (bits_ptr->fds_bits[i])
-	    /* For each fd_mask set in bits_ptr, mask off all but  */
-	    /* one byte and see if anything is set.                */
-	    for (byte = 0xff, byteNum = 0; byte != 0L;
-		 byte <<= NBBY, byteNum++)
-		if (bits_ptr->fds_bits[i] & byte)
-		    /* If a byte is set, find out which bit is set.*/
-		    for (fd = byteNum * NBBY + i * NFDBITS;
-			 fd < byteNum * NBBY + i * NFDBITS + NBBY; fd++)
-			if (FD_ISSET(fd, bits_ptr)) {
-			    (void) func(nclient, fd);
-			    FD_CLR(fd, bits_ptr);
-			}
+        if (bits_ptr->fds_bits[i])
+            /* For each fd_mask set in bits_ptr, mask off all but  */
+            /* one byte and see if anything is set.                */
+            for (byte = 0xff, byteNum = 0; byteNum < mask_bytes;
+                 byte <<= NBBY, byteNum++)
+                if (bits_ptr->fds_bits[i] & byte)
+                    /* If a byte is set, find out which bit is set.*/
+                    for (fd = byteNum * NBBY + i * NFDBITS;
+                         fd < byteNum * NBBY + i * NFDBITS + NBBY; fd++)
+                        if (FD_ISSET(fd, bits_ptr)) {
+                            (void) func(nclient, fd);
+                            FD_CLR(fd, bits_ptr);
+                        }
 }
 
 static void
