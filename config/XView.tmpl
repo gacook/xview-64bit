@@ -376,11 +376,11 @@ XCOMM # rules to those supplied with X Version 11 release 5.
 
 #if XvI18nLevel == 4
              XVCLIENTI18NDEFINES = -DOW_I18N_L4 -DOW_I18N_L3 -DOW_I18N -DFULL_R5
-             XVCLIENTMISCLIB = -lw
+             XVCLIENTMISCLIB = -lw -ltirpc -lncurses
              XVCLIENTINCLUDES = -I$(OPENWINHOME)/include
 #else
              XVCLIENTI18NDEFINES = -DOW_I18N_L3
-             XVCLIENTMISCLIB = 
+             XVCLIENTMISCLIB = -ltirpc -lncurses
              XVCLIENTINCLUDES = 
 #endif
 
